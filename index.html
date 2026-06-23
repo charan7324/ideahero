@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IdeaHero | Accelerate Your Startup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+    <!-- Header -->
+    <header class="w-full max-w-6xl flex justify-between items-center mb-8 fade-in">
+        <div class="flex items-center gap-2">
+            <i data-lucide="rocket" class="text-blue-600 w-8 h-8"></i>
+            <h1 class="text-2xl font-bold tracking-tight">Idea<span class="text-blue-600">Hero</span></h1>
+        </div>
+        <button onclick="resetApp()" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors hidden bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm" id="nav-reset">
+            <i data-lucide="rotate-ccw" class="w-4 h-4 inline-block mr-1"></i> Start Over
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-6xl flex-grow flex flex-col relative" id="main-container">
+        
+        <!-- View 1: Input Idea -->
+        <div id="view-input" class="w-full max-w-3xl mx-auto mt-12 fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-4xl font-bold mb-4">Turn your idea into a <span class="gradient-text">startup</span>.</h2>
+                <p class="text-slate-500 text-lg">Describe what you want to build. IdeaHero will clarify the details and generate a highly custom, comprehensive roadmap tailored to your specific idea.</p>
+            </div>
+            
+            <div class="glass-panel rounded-3xl p-6 sm:p-8 relative shadow-xl shadow-blue-900/5">
+                <textarea id="idea-input" rows="5" class="w-full bg-transparent border-0 focus:ring-0 text-lg resize-none placeholder-slate-400 outline-none" placeholder="e.g., I want to build a marketplace app for home-cooked meals by local aunties..."></textarea>
+                <div class="flex justify-between items-center mt-6 border-t border-slate-100 pt-6">
+                    <span class="text-xs text-slate-400 flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3 text-amber-500"></i> Powered by Gemini AI</span>
+                    <button onclick="submitIdea()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-semibold transition-all flex items-center gap-2 shadow-lg shadow-blue-200 hover:shadow-blue-300 transform hover:-translate-y-0.5">
+                        Accelerate <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 2: Clarification Questions -->
+        <div id="view-questions" class="w-full max-w-2xl mx-auto mt-8 hidden fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold mb-2">Let's clarify a few things</h2>
+                <p class="text-slate-500">To create the perfect personalized dashboard, we need a bit more detail.</p>
+            </div>
+            <div id="questions-container" class="space-y-6">
+                <!-- Questions injected here by JS -->
+            </div>
+            <div class="mt-8 flex justify-end">
+                <button onclick="submitAnswers()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 shadow-lg hover:-translate-y-0.5">
+                    Generate Dashboard <i data-lucide="zap" class="w-4 h-4 text-yellow-300"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- View 3: Dashboard / Roadmap -->
+        <div id="view-dashboard" class="w-full hidden fade-in pb-16">
+            
+            <!-- Dashboard Header with Cover Image (Artifact Style) -->
+            <div class="glass-panel rounded-3xl p-2 mb-8 bg-white border border-slate-200/60 shadow-sm relative overflow-hidden flex flex-col">
+                <!-- Generated Image as Cover -->
+                <div class="w-full h-64 sm:h-80 lg:h-[400px] rounded-2xl overflow-hidden shadow-inner hidden relative group bg-slate-100" id="dash-image-container">
+                    <img id="dash-image" src="" alt="Startup Visualization" class="w-full h-full object-cover filter transition-all duration-700" />
+                    <div class="absolute bottom-4 right-4 bg-slate-900/85 text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg backdrop-blur-md shadow-xl flex items-center gap-2 border border-slate-700/50">
+                        <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Visualized by AI
+                    </div>
+                </div>
+                <div class="p-6 sm:p-8 relative z-10">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-60 -mr-20 -mt-20 pointer-events-none"></div>
+                    <div class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 shadow-sm border border-blue-200">Project Overview</div>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                        <h2 id="dash-title" class="text-4xl font-extrabold text-slate-900 tracking-tight">Project Title</h2>
+                        <button onclick="generateNames()" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 shadow-sm w-fit">
+                            <i data-lucide="sparkles" class="w-3 h-3"></i> Brainstorm Names
+                        </button>
+                    </div>
+                    <p id="dash-pitch" class="text-slate-600 text-lg max-w-4xl leading-relaxed font-medium">Elevator pitch goes here...</p>
+                    <div class="mt-6 flex gap-3 flex-wrap">
+                        <button onclick="generatePitchDeck()" class="text-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-4 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 w-fit shadow-sm">
+                            <i data-lucide="presentation" class="w-4 h-4 text-blue-600"></i> Generate Pitch Deck Outline
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Grid for AI-Generated Widgets -->
+            <div id="dynamic-dashboard-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-min">
+                <!-- AI Widgets Injected Here -->
+            </div>
+
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="absolute inset-0 bg-slate-50/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center rounded-2xl">
+            <div class="loader mb-4"></div>
+            <h3 id="loading-text" class="text-lg font-bold text-slate-800">Analyzing your idea...</h3>
+            <p class="text-sm text-slate-500 mt-2 font-medium">Our AI is designing a custom dashboard layout.</p>
+        </div>
+
+        <!-- Error Toast -->
+        <div id="error-toast" class="fixed bottom-4 right-4 bg-red-100 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+            <i data-lucide="alert-circle" class="text-red-600"></i>
+            <span id="error-message" class="font-medium">An error occurred.</span>
+            <button onclick="hideError()" class="ml-4 text-red-500 hover:text-red-900"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+
+        <!-- AI Tools Modal -->
+        <div id="ai-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl relative border border-slate-200">
+                <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 id="ai-modal-title" class="text-xl font-bold flex items-center gap-2 text-slate-800">✨ AI Feature</h3>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-100 p-1.5 rounded-lg transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                <div id="ai-modal-content" class="p-6 overflow-y-auto flex-grow relative bg-slate-50/50">
+                    <!-- Content injected here -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const apiKey = "AIzaSyCIg7pXtO41AUil7X2wMGxC_hUghdDJQRg"; 
+
+        let userIdea = "";
+        let currentQuestions = [];
+        let userAnswers = {};
+
+        // Color themes mapping for dynamic widgets
+        const widgetThemes = {
+            emerald: { border: 'border-t-emerald-400', icon: 'text-emerald-500', tint: 'bg-emerald-50', text: 'text-emerald-700', bullet: 'bg-emerald-500' },
+            orange: { border: 'border-t-orange-400', icon: 'text-orange-500', tint: 'bg-orange-50', text: 'text-orange-700', bullet: 'bg-orange-500' },
+            purple: { border: 'border-t-purple-400', icon: 'text-purple-500', tint: 'bg-purple-50', text: 'text-purple-700', bullet: 'bg-purple-500' },
+            cyan: { border: 'border-t-cyan-400', icon: 'text-cyan-500', tint: 'bg-cyan-50', text: 'text-cyan-700', bullet: 'bg-cyan-500' },
+            blue: { border: 'border-t-blue-400', icon: 'text-blue-500', tint: 'bg-blue-50', text: 'text-blue-700', bullet: 'bg-blue-500' },
+            rose: { border: 'border-t-rose-400', icon: 'text-rose-500', tint: 'bg-rose-50', text: 'text-rose-700', bullet: 'bg-rose-500' },
+            amber: { border: 'border-t-amber-400', icon: 'text-amber-500', tint: 'bg-amber-50', text: 'text-amber-700', bullet: 'bg-amber-500' },
+        };
+
+        // DOM Elements
+        const viewInput = document.getElementById('view-input');
+        const viewQuestions = document.getElementById('view-questions');
+        const viewDashboard = document.getElementById('view-dashboard');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
+        const navReset = document.getElementById('nav-reset');
+
+        const clarificationSchema = {
+            type: "OBJECT",
+            properties: {
+                needsClarification: { type: "BOOLEAN" },
+                questions: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            id: { type: "STRING" },
+                            question: { type: "STRING" },
+                            options: { type: "ARRAY", items: { type: "STRING" } }
+                        },
+                        required: ["id", "question", "options"]
+                    }
+                }
+            },
+            required: ["needsClarification", "questions"]
+        };
+
+        const dynamicDashboardSchema = {
+            type: "OBJECT",
+            properties: {
+                productName: { type: "STRING" },
+                elevatorPitch: { type: "STRING" },
+                widgets: {
+                    type: "ARRAY",
+                    description: "An array of custom widgets tailored for this specific startup idea.",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            title: { type: "STRING" },
+                            type: { type: "STRING", description: "Must be one of: 'metrics', 'list', 'table', 'timeline', 'grid', 'tags'" },
+                            icon: { type: "STRING", description: "Lucide icon name (e.g. dollar-sign, users, box, target, map, cpu, scale, rocket, line-chart)" },
+                            colSpan: { type: "INTEGER", description: "1, 2, or 3. Represents how many columns wide this widget should be on desktop." },
+                            colorTheme: { type: "STRING", description: "One of: emerald, orange, purple, cyan, blue, rose, amber" },
+                            items: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        label: { type: "STRING", description: "Main text or title for the item" },
+                                        value: { type: "STRING", description: "Value for metrics or sub-label for other types" },
+                                        description: { type: "STRING", description: "Longer description text" },
+                                        tasks: { type: "ARRAY", items: { type: "STRING" }, description: "Used primarily for timeline or grid types" },
+                                        searchQuery: { type: "STRING", description: "If table type (like a BOM), provide a search query for buying this item (e.g., 'Arduino Uno R3 india')" }
+                                    },
+                                    required: ["label"]
+                                }
+                            }
+                        },
+                        required: ["title", "type", "icon", "colSpan", "colorTheme", "items"]
+                    }
+                }
+            },
+            required: ["productName", "elevatorPitch", "widgets"]
+        };
+
+        const namesSchema = {
+            type: "OBJECT",
+            properties: {
+                names: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            name: { type: "STRING" },
+                            reason: { type: "STRING" }
+                        },
+                        required: ["name", "reason"]
+                    }
+                }
+            },
+            required: ["names"]
+        };
+
+        const pitchDeckSchema = {
+            type: "OBJECT",
+            properties: {
+                slides: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            slideNumber: { type: "INTEGER" },
+                            title: { type: "STRING" },
+                            bulletPoints: { type: "ARRAY", items: { type: "STRING" } }
+                        },
+                        required: ["slideNumber", "title", "bulletPoints"]
+                    }
+                }
+            },
+            required: ["slides"]
+        };
+
+        function showLoading(text) {
+            loadingText.innerText = text;
+            loadingOverlay.classList.remove('hidden');
+            loadingOverlay.classList.add('flex');
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
+            loadingOverlay.classList.remove('flex');
+        }
+
+        function showError(msg) {
+            document.getElementById('error-message').innerText = msg;
+            const toast = document.getElementById('error-toast');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(hideError, 5000);
+        }
+
+        function hideError() {
+            const toast = document.getElementById('error-toast');
+            toast.classList.add('translate-y-20', 'opacity-0');
+        }
+
+        function switchView(viewId) {
+            viewInput.classList.add('hidden');
+            viewQuestions.classList.add('hidden');
+            viewDashboard.classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            if(viewId === 'view-input') {
+                navReset.classList.add('hidden');
+            } else {
+                navReset.classList.remove('hidden');
+            }
+        }
+
+        function resetApp() {
+            userIdea = "";
+            currentQuestions = [];
+            userAnswers = {};
+            document.getElementById('idea-input').value = "";
+            document.getElementById('dash-image-container').classList.add('hidden');
+            document.getElementById('dynamic-dashboard-grid').innerHTML = '';
+            switchView('view-input');
+        }
+
+        async function callGemini(prompt, systemInstruction, schema, useSearch = false) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: schema,
+                    temperature: 0.3
+                }
+            };
+
+            if (useSearch) {
+                payload.tools = [{ "google_search": {} }];
+            }
+
+            let retries = 5;
+            let delays = [1000, 2000, 4000, 8000, 16000];
+
+            for (let i = 0; i <= retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                    const data = await response.json();
+                    if(data.candidates && data.candidates[0].content.parts[0].text) {
+                        return JSON.parse(data.candidates[0].content.parts[0].text);
+                    } else {
+                        throw new Error("Invalid response format");
+                    }
+                } catch (error) {
+                    if (i === retries) {
+                        throw error;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                }
+            }
+        }
+
+        async function submitIdea() {
+            const input = document.getElementById('idea-input').value.trim();
+            if (!input) {
+                showError("Please describe your idea first!");
+                return;
+            }
+
+            userIdea = input;
+            showLoading("Analyzing idea details...");
+
+            const systemPrompt = "You are IdeaHero, an expert startup advisor AI. Analyze the user's idea. Determine if it is specific enough to build a detailed roadmap. If vague, generate 1-3 multiple-choice questions to clarify. Return JSON based on the schema.";
+            
+            try {
+                const result = await callGemini(userIdea, systemPrompt, clarificationSchema);
+                hideLoading();
+
+                if (result.needsClarification && result.questions && result.questions.length > 0) {
+                    currentQuestions = result.questions;
+                    renderQuestions();
+                    switchView('view-questions');
+                } else {
+                    generateRoadmap();
+                }
+
+            } catch (err) {
+                hideLoading();
+                showError("Failed to analyze idea. Please try again.");
+            }
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            currentQuestions.forEach((q, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm";
+                
+                let optionsHtml = q.options.map(opt => `
+                    <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all">
+                        <input type="radio" name="${q.id}" value="${opt}" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500" onchange="recordAnswer('${q.id}', '${opt}')">
+                        <span class="ml-3 text-slate-700 font-medium">${opt}</span>
+                    </label>
+                `).join('');
+
+                qDiv.innerHTML = `
+                    <h3 class="font-bold text-lg mb-4 text-slate-800"><span class="text-blue-500 mr-2">${index + 1}.</span>${q.question}</h3>
+                    <div class="space-y-3">${optionsHtml}</div>
+                `;
+                container.appendChild(qDiv);
+            });
+        }
+
+        function recordAnswer(questionId, answer) {
+            userAnswers[questionId] = answer;
+        }
+
+        async function submitAnswers() {
+            for (let q of currentQuestions) {
+                if (!userAnswers[q.id]) {
+                    showError("Please answer all questions before proceeding.");
+                    return;
+                }
+            }
+            generateRoadmap();
+        }
+
+        async function generateRoadmap() {
+            showLoading("Designing your custom dashboard...");
+
+            let combinedContext = `User's Idea: ${userIdea}\n\n`;
+            if (Object.keys(userAnswers).length > 0) {
+                combinedContext += "Clarifications:\n";
+                currentQuestions.forEach(q => {
+                    combinedContext += `- ${q.question}: ${userAnswers[q.id]}\n`;
+                });
+            }
+
+            const systemPrompt = `You are IdeaHero, an expert startup accelerator AI. Create a highly detailed, CUSTOM dashboard for this startup.
+
+CRITICAL INSTRUCTIONS:
+1. You have total creative freedom to decide what information to display. Do NOT follow a fixed template.
+2. Generate an array of 'widgets'. Choose widgets that make sense for THIS specific idea.
+3. Examples of widgets: Financial Projections (metrics), Target Audience (tags), Tech Stack (tags), Hardware BOM (table with search queries), Compliance/Legal Docs (list), Execution Roadmap (timeline or grid), Marketing Strategy (list).
+4. Use 'colSpan' to dictate layout width. '1' is 1/3 width, '2' is 2/3 width, '3' is full width. Ensure the grid flows logically.
+5. Provide realistic data/estimates. If monetary, use INR (₹). If table type requires a search (like parts), provide a 'searchQuery'.`;
+
+            try {
+                // Fire off image generation in the background concurrently
+                generateRoadmapImage(userIdea);
+
+                const result = await callGemini(combinedContext, systemPrompt, dynamicDashboardSchema, true);
+                hideLoading();
+                renderDynamicDashboard(result);
+                switchView('view-dashboard');
+            } catch (err) {
+                hideLoading();
+                showError("Failed to generate dashboard. Please try again.");
+            }
+        }
+
+        async function generateRoadmapImage(ideaText) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+            const prompt = `A highly professional, futuristic, and visually stunning product showcase graphic representing this startup idea: ${ideaText}. Clean, modern UI style, vibrant colors, highly detailed, wide landscape format.`;
+            const payload = {
+                instances: { prompt: prompt },
+                parameters: { sampleCount: 1, aspectRatio: "16:9" }
+            };
+            try {
+                const response = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const data = await response.json();
+                if (data.predictions && data.predictions[0]) {
+                    const imgUrl = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+                    document.getElementById('dash-image').src = imgUrl;
+                    document.getElementById('dash-image-container').classList.remove('hidden');
+                }
+            } catch(e) {
+                console.error("Image generation failed", e);
+            }
+        }
+
+        function openModal(title) {
+            document.getElementById('ai-modal-title').innerHTML = `✨ ${title}`;
+            document.getElementById('ai-modal-content').innerHTML = '<div class="flex flex-col justify-center items-center py-20 text-slate-500"><div class="loader mb-4"></div><p class="font-medium">AI is generating...</p></div>';
+            document.getElementById('ai-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('ai-modal').classList.add('hidden');
+        }
+
+        async function generateNames() {
+            openModal("Catchy Startup Names");
+            
+            let combinedContext = `User's Idea: ${userIdea}\n`;
+            if (Object.keys(userAnswers).length > 0) {
+                currentQuestions.forEach(q => { combinedContext += `- ${q.question}: ${userAnswers[q.id]}\n`; });
+            }
+
+            const prompt = `Based on this startup idea:\n${combinedContext}\nGenerate 5 catchy, modern, and memorable startup names. Provide a short reason why each works.`;
+            const systemInstruction = "You are a creative branding expert and naming consultant.";
+
+            try {
+                const result = await callGemini(prompt, systemInstruction, namesSchema);
+                let html = '<div class="space-y-4">';
+                if (result.names) {
+                    result.names.forEach(n => {
+                        html += `
+                            <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                <h4 class="text-xl font-bold text-blue-700 mb-1.5">${n.name}</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">${n.reason}</p>
+                            </div>
+                        `;
+                    });
+                }
+                html += '</div>';
+                document.getElementById('ai-modal-content').innerHTML = html;
+            } catch (e) {
+                document.getElementById('ai-modal-content').innerHTML = '<p class="text-red-500 py-4 text-center font-semibold">Failed to brainstorm names. Please try again.</p>';
+            }
+        }
+
+        async function generatePitchDeck() {
+            openModal("Pitch Deck Outline");
+            
+            let combinedContext = `User's Idea: ${userIdea}\n`;
+            if (Object.keys(userAnswers).length > 0) {
+                currentQuestions.forEach(q => { combinedContext += `- ${q.question}: ${userAnswers[q.id]}\n`; });
+            }
+
+            const prompt = `Based on this startup idea:\n${combinedContext}\nCreate a structured 5-6 slide pitch deck outline (Problem, Solution, Market, Business Model, Team/Traction).`;
+            const systemInstruction = "You are an expert venture capitalist advising a founder on how to structure a compelling pitch deck.";
+
+            try {
+                const result = await callGemini(prompt, systemInstruction, pitchDeckSchema);
+                let html = '<div class="space-y-6">';
+                if (result.slides) {
+                    result.slides.forEach(s => {
+                        let bullets = s.bulletPoints.map(b => `<li class="text-sm text-slate-600 ml-5 list-disc pl-1 marker:text-blue-400">${b}</li>`).join('');
+                        html += `
+                            <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                <h4 class="font-bold text-slate-800 mb-4 text-lg border-b border-slate-100 pb-3 flex items-center gap-2"><span class="bg-blue-100 text-blue-700 w-6 h-6 rounded flex items-center justify-center text-xs">${s.slideNumber}</span> ${s.title}</h4>
+                                <ul class="space-y-2.5">${bullets}</ul>
+                            </div>
+                        `;
+                    });
+                }
+                html += '</div>';
+                document.getElementById('ai-modal-content').innerHTML = html;
+            } catch (e) {
+                document.getElementById('ai-modal-content').innerHTML = '<p class="text-red-500 py-4 text-center font-semibold">Failed to generate pitch deck. Please try again.</p>';
+            }
+        }
+
+        function renderDynamicDashboard(data) {
+            document.getElementById('dash-title').innerText = data.productName || "Your Startup";
+            document.getElementById('dash-pitch').innerText = data.elevatorPitch || "";
+
+            const gridContainer = document.getElementById('dynamic-dashboard-grid');
+            gridContainer.innerHTML = '';
+
+            if (data.widgets && data.widgets.length > 0) {
+                data.widgets.forEach(widget => {
+                    const theme = widgetThemes[widget.colorTheme] || widgetThemes.blue;
+                    
+                    // Determine grid column span
+                    let colClass = 'md:col-span-1';
+                    if (widget.colSpan === 2) colClass = 'md:col-span-2';
+                    if (widget.colSpan === 3) colClass = 'md:col-span-3 lg:col-span-3';
+
+                    let contentHtml = '';
+
+                    // Generate specific UI for different widget types
+                    if (widget.type === 'metrics') {
+                        contentHtml = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">` + widget.items.map(i => `
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
+                                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">${i.label}</span>
+                                <div class="text-2xl font-black text-slate-800">${i.value || '-'}</div>
+                                ${i.description ? `<div class="text-xs text-slate-400 mt-1.5 font-medium">${i.description}</div>` : ''}
+                            </div>
+                        `).join('') + `</div>`;
+                        
+                    } else if (widget.type === 'list') {
+                        contentHtml = `<ul class="space-y-4">` + widget.items.map(i => `
+                            <li class="flex items-start gap-3 bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+                                <div class="mt-1 w-2 h-2 rounded-full flex-shrink-0 ${theme.bullet}"></div>
+                                <div>
+                                    <p class="font-bold text-slate-800 text-sm mb-0.5">${i.label}</p>
+                                    ${i.value ? `<p class="text-xs font-semibold ${theme.text} mb-1">${i.value}</p>` : ''}
+                                    ${i.description ? `<p class="text-xs text-slate-500 leading-relaxed">${i.description}</p>` : ''}
+                                </div>
+                            </li>
+                        `).join('') + `</ul>`;
+
+                    } else if (widget.type === 'tags') {
+                        contentHtml = `<div class="flex flex-wrap gap-2">` + widget.items.map(i => `
+                            <span class="inline-flex items-center gap-1.5 bg-white border border-slate-200 shadow-sm px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700">
+                                ${i.label}
+                            </span>
+                        `).join('') + `</div>`;
+
+                    } else if (widget.type === 'table') {
+                        contentHtml = `
+                            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                                <table class="w-full text-left border-collapse bg-white">
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${widget.items.map(i => {
+                                            let actionBtn = '';
+                                            if (i.searchQuery) {
+                                                const url = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(i.searchQuery)}`;
+                                                actionBtn = `
+                                                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold px-3 py-1.5 rounded-md transition-colors shadow-sm">
+                                                        SEARCH <i data-lucide="external-link" class="w-3 h-3"></i>
+                                                    </a>
+                                                `;
+                                            }
+                                            return `
+                                            <tr class="hover:bg-slate-50 transition-colors">
+                                                <td class="py-3 px-4 font-medium text-slate-700 text-sm">${i.label}</td>
+                                                <td class="py-3 px-4 text-slate-800 font-bold text-sm bg-slate-50/50">${i.value || ''}</td>
+                                                <td class="py-3 px-4 text-right">${actionBtn}</td>
+                                            </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+
+                    } else if (widget.type === 'timeline') {
+                        contentHtml = `<div class="border-l-2 border-slate-100 ml-3 space-y-8 mt-2">` + widget.items.map(i => `
+                            <div class="relative pl-6">
+                                <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full ${theme.tint} border-2 border-white ring-1 ring-slate-200 flex items-center justify-center">
+                                    <div class="w-1.5 h-1.5 rounded-full ${theme.bullet}"></div>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-base">${i.label}</h4>
+                                ${i.value ? `<div class="text-[10px] font-bold ${theme.text} ${theme.tint} uppercase tracking-wider inline-block px-2.5 py-1 rounded mt-1.5 mb-2">${i.value}</div>` : ''}
+                                ${i.description ? `<p class="text-sm text-slate-500 mt-1 mb-3">${i.description}</p>` : ''}
+                                ${i.tasks && i.tasks.length > 0 ? `
+                                    <ul class="space-y-2 mt-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                                        ${i.tasks.map(t => `<li class="text-xs text-slate-600 flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 flex-shrink-0"></div><span>${t}</span></li>`).join('')}
+                                    </ul>
+                                ` : ''}
+                            </div>
+                        `).join('') + `</div>`;
+
+                    } else if (widget.type === 'grid') {
+                        contentHtml = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">` + widget.items.map(i => `
+                            <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                                <h4 class="font-bold text-slate-800 text-base mb-1">${i.label}</h4>
+                                ${i.value ? `<span class="text-[10px] font-bold ${theme.text} ${theme.tint} uppercase px-2 py-0.5 rounded">${i.value}</span>` : ''}
+                                ${i.description ? `<p class="text-xs text-slate-500 mt-2">${i.description}</p>` : ''}
+                                ${i.tasks && i.tasks.length > 0 ? `
+                                    <div class="mt-3 pt-3 border-t border-slate-50 space-y-1.5">
+                                        ${i.tasks.map(t => `<div class="text-[11px] text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-100">${t}</div>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('') + `</div>`;
+                    }
+
+                    // Build and append the final widget wrapper
+                    const widgetHtml = `
+                        <div class="${colClass} glass-panel rounded-2xl p-6 border-t-4 ${theme.border} flex flex-col">
+                            <div class="flex items-center gap-2.5 mb-6">
+                                <div class="p-2 rounded-lg ${theme.tint}">
+                                    <i data-lucide="${widget.icon || 'circle'}" class="w-5 h-5 ${theme.icon}"></i>
+                                </div>
+                                <h3 class="font-bold text-lg text-slate-800">${widget.title}</h3>
+                            </div>
+                            <div class="flex-grow">
+                                ${contentHtml}
+                            </div>
+                        </div>
+                    `;
+                    gridContainer.innerHTML += widgetHtml;
+                });
+            } else {
+                gridContainer.innerHTML = `<div class="col-span-full text-center p-8 text-slate-500">Failed to generate dashboard widgets.</div>`;
+            }
+
+            lucide.createIcons();
+        }
+
+    </script>
+</body>
+</html>
